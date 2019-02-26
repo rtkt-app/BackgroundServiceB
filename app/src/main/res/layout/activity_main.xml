@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/btnStart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start service"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/btnCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Check status"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/btnStop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stop service"
+        android:textAllCaps="false" />
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="Hello World!" />
+
+    <Button
+        android:id="@+id/fileList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get fileList"
+        android:textAllCaps="false" />
+
+    <TextView
+        android:id="@+id/tvFileLsit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="Hello World!" />
+
+    <Button
+        android:id="@+id/sendFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="send file"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/playfile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="play file"
+        android:textAllCaps="false" />
+
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>
