@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textView, textView1;
     byte[] byteArray;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

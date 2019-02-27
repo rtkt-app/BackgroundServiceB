@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -36,48 +37,60 @@ public class SendFileTask extends AsyncTask<String, Integer, String> {
         this.application = application;
         context= this.application.getApplicationContext();
         title = context.getString(R.string.app_name);
+        manager = (NotificationManager)application.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel channel = new NotificationChannel(channelId, title, NotificationManager.IMPORTANCE_DEFAULT);
+        channel.enableVibration(true);
+        channel.canShowBadge();
+        channel.enableLights(true);
+        channel.setLightColor(Color.BLUE);
+        // the channel appears on the lockscreen
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        channel.setShowBadge(true);
     }
 
     @Override
     protected void onPreExecute(){
-
-        manager = (NotificationManager)application.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        channel = new NotificationChannel(channelId, title , NotificationManager.IMPORTANCE_DEFAULT);
         if(manager.getNotificationChannel(channelId) == null){
             manager.createNotificationChannel(channel);
         }
         notification = new Notification.Builder(context, channelId).setContentTitle(title)
                 // android標準アイコンから
-                .setSmallIcon(android.R.drawable.ic_dialog_info).setContentText("Secure Camera is running …")
+                .setSmallIcon(android.R.drawable.ic_menu_upload).setContentText("Secure Camera is running …")
                 .setAutoCancel(true).setWhen(System.currentTimeMillis()).setProgress(100, 0 , false)
                 .build();
+        // 通知
+        manager.notify(R.string.app_name, notification);
     }
 
     @Override
     protected void onProgressUpdate(Integer... values) {
         // Update progress
         super.onProgressUpdate(values[0]);
+        notification = new Notification.Builder(context, channelId).setContentTitle(title)
+                // android標準アイコンから
+                .setSmallIcon(android.R.drawable.ic_menu_upload).setContentText("Secure Camera is running …")
+                .setAutoCancel(true).setWhen(System.currentTimeMillis()).setProgress(100, values[0] , false)
+                .build();
+        manager.notify(R.string.app_name, notification);
     }
 
     @Override
     protected String doInBackground(String... strings) {
-        publishProgress(10);
         String lineEnd = "\r\n";
         String twoHyphens = "--";
         String boundary = "*****";
         response = "";
-        try {
+        String returnString = "error";
             int bytesRead, bytesAvailable, bufferSize;
             byte[] buffer;
             int maxBufferSize = 50 * 1024;
             File file = new File(strings[0]);
+        try {
             FileInputStream fileInputStream = new FileInputStream(file);
 
             //URL url = new URL("http://192.168.1.6/fileUpload/upload.php");
             URL url = new URL("http://172.17.52.220/fileUpload/upload.php");
-
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
             // Allow Inputs & Outputs
             connection.setDoInput(true);
             connection.setDoOutput(true);
@@ -118,6 +131,7 @@ public class SendFileTask extends AsyncTask<String, Integer, String> {
             buffer = new byte[bufferSize];
 
             // Read file
+
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
             System.out.println("Image length " + bytesAvailable + "");
 
@@ -135,6 +149,7 @@ public class SendFileTask extends AsyncTask<String, Integer, String> {
             }
             outputStream.writeBytes(lineEnd);
             outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
 
             // Responses from the server (code and message)
             int serverResponseCode = connection.getResponseCode();
@@ -164,17 +179,32 @@ public class SendFileTask extends AsyncTask<String, Integer, String> {
             outputStream.close();
             outputStream = null;
 
+            if(responseString.equals("uploaded")){
+                returnString = "uploaded";
+            }
         } catch (Exception e) {
             e.printStackTrace();
             response = "error";
         } finally {
-            publishProgress(50);
-            return response;
+            publishProgress(100);
+            return returnString + "@" + file.getName();
         }
     }
 
     @Override
     protected void onPostExecute(String response){
+        String result = response.split("@")[0];
+        String fileName = response.split("@")[1];
+        if(result.equals("uploaded")){
+            File file = new File(application.getFilesDir()+"/"+fileName);
+            file.delete();
+        }
         Toast.makeText(application.getApplicationContext(), response, Toast.LENGTH_SHORT).show();
+        notification = new Notification.Builder(context, channelId).setContentTitle(title)
+                // android標準アイコンから
+                .setSmallIcon(android.R.drawable.ic_menu_upload).setContentText("File Upload successfully")
+                .setAutoCancel(true).setWhen(System.currentTimeMillis()).setProgress(0,  0, false)
+                .build();
+        manager.notify(R.string.app_name, notification);
     }
 }
