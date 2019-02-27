@@ -1,8 +1,15 @@
 package com.myvnc.androidapplication.backgroundservice;
 
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.widget.Toast;
 
@@ -11,18 +18,50 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Base64;
 
-public class SendFileTask extends AsyncTask<String, String, String> {
+
+public class SendFileTask extends AsyncTask<String, Integer, String> {
     Application application;
     String response;
+    private NotificationManager manager;
+    private Notification notification;
+    NotificationChannel channel;
+    final int id = 1010;
+    int requestCode = 999;
+    Context context;
+    String channelId = "default2";
+    String title="";
+
     public SendFileTask(Application application){
         this.application = application;
+        context= this.application.getApplicationContext();
+        title = context.getString(R.string.app_name);
+    }
+
+    @Override
+    protected void onPreExecute(){
+
+        manager = (NotificationManager)application.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        channel = new NotificationChannel(channelId, title , NotificationManager.IMPORTANCE_DEFAULT);
+        if(manager.getNotificationChannel(channelId) == null){
+            manager.createNotificationChannel(channel);
+        }
+        notification = new Notification.Builder(context, channelId).setContentTitle(title)
+                // android標準アイコンから
+                .setSmallIcon(android.R.drawable.ic_dialog_info).setContentText("Secure Camera is running …")
+                .setAutoCancel(true).setWhen(System.currentTimeMillis()).setProgress(100, 0 , false)
+                .build();
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        // Update progress
+        super.onProgressUpdate(values[0]);
     }
 
     @Override
     protected String doInBackground(String... strings) {
+        publishProgress(10);
         String lineEnd = "\r\n";
         String twoHyphens = "--";
         String boundary = "*****";
@@ -129,6 +168,7 @@ public class SendFileTask extends AsyncTask<String, String, String> {
             e.printStackTrace();
             response = "error";
         } finally {
+            publishProgress(50);
             return response;
         }
     }

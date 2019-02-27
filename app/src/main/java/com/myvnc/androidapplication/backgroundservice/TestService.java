@@ -40,8 +40,8 @@ public class TestService extends Service  {
             Notification notification = new Notification.Builder(context, channelId)
                     .setContentTitle(title)
                     // android標準アイコンから
-                    .setSmallIcon(android.R.drawable.ic_media_play)
-                    .setContentText("MediaPlay")
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setContentText("Secure Camera is running …")
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
                     .setWhen(System.currentTimeMillis())
