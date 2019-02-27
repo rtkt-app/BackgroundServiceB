@@ -1,14 +1,16 @@
 package com.myvnc.androidapplication.backgroundservice;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.FileObserver;
 import android.util.Log;
 import android.widget.Toast;
 
 public class ObserbleFolder extends FileObserver {
-
-    public ObserbleFolder(String path) {
+    Application application;
+    public ObserbleFolder(String path, Application application) {
         super(path);
+        this.application = application;
     }
 
     @Override

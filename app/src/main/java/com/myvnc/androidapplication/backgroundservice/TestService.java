@@ -49,7 +49,58 @@ public class TestService extends Service  {
             // startForeground
             startForeground(1, notification);
         }
-        obserbleFolder = new ObserbleFolder(getApplicationContext().getFilesDir().toString());
+        obserbleFolder = new ObserbleFolder(getApplicationContext().getFilesDir().toString(), getApplication()){
+            // ディレクトリ内で、変化が起きたら呼ばれるイベント
+            @Override
+            public void onEvent(int event, String path) {
+                if(path!=null){
+                    Log.d("Observer Event", path);
+                    switch (event) {
+                        case FileObserver.ACCESS:
+                            Log.d("Observer Event", "ACCESS");
+                            break;
+                        case FileObserver.ALL_EVENTS:
+                            Log.d("Observer Event", "ALL_EVENTS");
+                            break;
+                        case FileObserver.ATTRIB:
+                            Log.d("Observer Event", "ATTRIB");
+                            break;
+                        case FileObserver.CLOSE_NOWRITE:
+                            Log.d("Observer Event", "NOWRITE");
+                            break;
+                        case FileObserver.CLOSE_WRITE:
+                            Log.d("Observer Event", "WRITE");
+                            SendFileTask sendFileTask = new SendFileTask(application);
+                            sendFileTask.execute(application.getApplicationContext().getFilesDir()+"/"+path);
+                            break;
+                        case FileObserver.CREATE:
+                            Log.d("Observer Event", "CREATE");
+                            break;
+                        case FileObserver.DELETE:
+                            Log.d("Observer Event", "DELETE");
+                            break;
+                        case FileObserver.DELETE_SELF:
+                            Log.d("Observer Event", "DELETE_SELF");
+                            break;
+                        case FileObserver.MODIFY:
+                            Log.d("Observer Event", "MODIFY");
+                            break;
+                        case FileObserver.MOVED_FROM:
+                            Log.d("Observer Event", "MOVED_FROM");
+                            break;
+                        case FileObserver.MOVED_TO:
+                            Log.d("Observer Event", "MOVED_TO");
+                            break;
+                        case FileObserver.MOVE_SELF:
+                            Log.d("Observer Event", "MOVE_SELF");
+                            break;
+                        case FileObserver.OPEN:
+                            Log.d("Observer Event", "OPEN");
+                            break;
+                    }
+                }
+            }
+        };
         obserbleFolder.startWatching();
         return START_NOT_STICKY;
         //return START_STICKY;

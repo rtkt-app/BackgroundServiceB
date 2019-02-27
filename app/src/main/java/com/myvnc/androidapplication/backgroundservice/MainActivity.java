@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         textView = findViewById(R.id.tvStatus);
         textView1 = findViewById(R.id.tvFileLsit);
         Button buttonStart = findViewById(R.id.btnStart);
-        ;
+        buttonStart.setClickable(false);
         buttonStart.setOnClickListener(v -> {
             Intent intent = new Intent(getApplication(), TestService.class);
             intent.putExtra("REQUEST_CODE", 1);
@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button buttonStop = findViewById(R.id.btnStop);
+        buttonStop.setClickable(false);
         buttonStop.setOnClickListener(v -> {
             Intent intent = new Intent(getApplication(), TestService.class);
             // Serviceの停止
@@ -105,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
             File file = new File(filePath);
             Toast.makeText(getApplicationContext(), file.getName().toString(), Toast.LENGTH_SHORT).show();
             Log.d("tag", "");
-            SendMovieTask sendMovieTask = new SendMovieTask();
-            sendMovieTask.execute(filePath);
+            SendFileTask sendFileTask = new SendFileTask(getApplication());
+            sendFileTask.execute(filePath);
 
         });
         Button playFile = findViewById(R.id.playfile);
@@ -163,124 +164,5 @@ public class MainActivity extends AppCompatActivity {
     public void putLog(String mess) {
         log += mess;
         textView1.setText(log);
-    }
-
-    private class SendMovieTask extends AsyncTask<String, String, String> {
-        String response;
-
-        @Override
-        protected String doInBackground(String... strings) {
-            String lineEnd = "\r\n";
-            String twoHyphens = "--";
-            String boundary = "*****";
-            response = "";
-            try {
-                int bytesRead, bytesAvailable, bufferSize;
-                byte[] buffer;
-                int maxBufferSize = 50 * 1024;
-                FileInputStream fileInputStream = new FileInputStream(new File(getApplication().getFilesDir()+"/waterfall-free-video1.mp4"));
-
-                URL url = new URL("http://192.168.1.6/fileUpload/upload.php");
-
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-                // Allow Inputs & Outputs
-                connection.setDoInput(true);
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
-                connection.setChunkedStreamingMode(1024);
-                // Enable POST method
-                connection.setRequestMethod("POST");
-
-                connection.setRequestProperty("Connection", "Keep-Alive");
-                connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-                DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-
-                String token = "anyvalye";
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"Token\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: text/plain;charset=UTF-8" + lineEnd);
-                outputStream.writeBytes("Content-Length: " + token.length() + lineEnd);
-                outputStream.writeBytes(lineEnd);
-                outputStream.writeBytes(token + lineEnd);
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-
-                String taskId = "anyvalue";
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"TaskID\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: text/plain;charset=UTF-8" + lineEnd);
-                outputStream.writeBytes("Content-Length: " + taskId.length() + lineEnd);
-                outputStream.writeBytes(lineEnd);
-                outputStream.writeBytes(taskId + lineEnd);
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-
-                String connstr = null;
-                connstr = "Content-Disposition: form-data; name=\"up_file\";filename=\""+ strings[0] + "\"" + lineEnd;
-
-                outputStream.writeBytes(connstr);
-                outputStream.writeBytes(lineEnd);
-
-                bytesAvailable = fileInputStream.available();
-                bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                buffer = new byte[bufferSize];
-
-                // Read file
-                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-                System.out.println("Image length " + bytesAvailable + "");
-
-                while (bytesRead > 0) {
-                    try {
-                        outputStream.write(buffer, 0, bufferSize);
-                    } catch (OutOfMemoryError e) {
-                        e.printStackTrace();
-                        response = "outofmemoryerror";
-                        return response;
-                    }
-                    bytesAvailable = fileInputStream.available();
-                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-                }
-                outputStream.writeBytes(lineEnd);
-                outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
-                // Responses from the server (code and message)
-                int serverResponseCode = connection.getResponseCode();
-                String serverResponseMessage = connection.getResponseMessage();
-                System.out.println("Server Response Code " + " " + serverResponseCode);
-                System.out.println("Server Response Message " + serverResponseMessage);
-
-                if (serverResponseCode == 200) {
-                    response = "true";
-                } else {
-                    response = "false";
-                }
-                fileInputStream.close();
-                outputStream.flush();
-
-                connection.getInputStream();
-                //for android InputStream is = connection.getInputStream();
-                java.io.InputStream is = connection.getInputStream();
-
-                int ch;
-                StringBuffer b = new StringBuffer();
-                while ((ch = is.read()) != -1) {
-                    b.append((char) ch);
-                }
-                String responseString = b.toString();
-                System.out.println("response string is" + responseString); //Here is the actual output
-                outputStream.close();
-                outputStream = null;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                response = "error";
-            } finally {
-                return response;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String response){
-            Toast.makeText(getApplicationContext(), response, Toast.LENGTH_SHORT).show();
-        }
     }
 }
